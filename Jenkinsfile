@@ -2,19 +2,19 @@ pipeline {
     agent any 
     stages {
         stage ('Git checkout') {
-            step {
+            steps {
                 git 'https://github.com/andy-ifeanyi/tdd-pytest-jenkins-demo-1.git'
 
             }
         }
         stage ('build') {
-            step {
+            steps {
                 sh "python palindrome.py"
                 sh "python leapyear.py"
             }
         }
         stage ('test') {
-            step {
+            steps {
                 sh "pytest -v"
             }
         }
