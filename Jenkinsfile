@@ -1,5 +1,5 @@
 pipeline {
-    agent any 
+    agent { docker { image 'python:3.7.2' } }
     stages {
         stage ('Git checkout') {
             steps {
@@ -9,6 +9,7 @@ pipeline {
         }
         stage ('build') {
             steps {
+                sh 'pip install -r requirements.txt'
                 sh "python palindrome.py"
                 sh "python leapyear.py"
             }
