@@ -19,7 +19,9 @@ pipeline {
             }
         }
         stage ('deploy'){
-            echo 'application built, tested, and deployed successfully.'
+            steps {
+                echo 'application built, tested, and deployed successfully.'
+            }
         }
     }
     post {
