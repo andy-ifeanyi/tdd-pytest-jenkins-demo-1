@@ -1,34 +1,48 @@
-pipeline {
-    agent { docker { image 'python:3.7.4' } }
-    stages {
-        stage ('Git checkout') {
-            steps {
-                git 'https://github.com/andy-ifeanyi/tdd-pytest-jenkins-demo-1.git'
-
-            }
-        }
-        stage ('build') {
-            steps {
-                sh 'pip install -r requirements.txt'
-                sh "python palindrome.py"
-                sh "python leapyear.py"
-            }
-        }
-        stage ('test') {
-            steps {
-                sh "pytest -v"
-            }
-        }
-        stage ('deploy'){
-            steps {
-                echo 'application built, tested, and deployed successfully.'
-            }
-        }
+pipeline{
+    agent none
+    options {
+        skipStagesAfterUnstable()
     }
-    post {
-        always {
-            junit 'test-reports/*.xml'
-            echo 'This message will always be displayed irrespective of outcome.'
+    stages {
+        stage('Build') {
+            agent {
+                docker {
+                    image 'python:3.7-alpine'
+                }
+            }
+            steps {
+                sh 'python -m py_compile palindrome.py leapyear.py'
+            }
+        }
+        stage('Test') {
+            agent {
+                docker {
+                    image 'qnib/pytest'
+                }
+            }
+            steps {
+                sh 'py.test --verbose --junit-xml test-reports/results.xml test_is_palindrome.py test_leapyear.py'
+            }
+            post {
+                always {
+                    junit 'test-reports/results.xml'
+                }
+            }
+        }
+        stage('Deliver') {
+            agent {
+                docker {
+                    image 'cdrx/pyinstaller-linux:python3'
+                }
+            }
+            steps {
+                sh 'pyinstaller --onefile palindrome.py'
+            }
+            post {
+                success {
+                    archiveArtifacts 'dist/palindrome'
+                }
+            }
         }
     }
 }
